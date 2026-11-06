@@ -28,8 +28,9 @@ Was behoben / ergaenzt ist
     LT Block/Sekundaer   RT Angriff/Feuer   LB Taschenlampe   RB Zoom
     D-Pad links/rechts/oben: Lehnen   D-Pad unten: Hilfe
     Back: Journal   Start: Pause
-* Vibration aus den Original-Huellkurven des Spiels (Content\Feedback); die Engine
-  verwarf sie ohne DirectInput-Pad, der Fix meldet das XInput-Pad als aktiv.
+* Vibration: die PC-Fassung spielt keine Ruettel-Effekte ab (Code herauskompiliert,
+  Content/Feedback/feedback.xrg wird nie geladen). Der Fix laedt die 51 Huellkurven der
+  Xbox-Fassung selbst und steuert damit beide Motoren.
 * Xbox-Knopfsymbole: farbige Original-Glyphen (A/B/X/Y aus GUI.xtc) im
   Fliesstext, Menue-Hinweise wie auf der Konsole, "Hilfe" im HUD mit D-Pad.
 * Seitenverhaeltnis der 2D-Elemente: Menues/HUD sind ein festes 640x480-Raster,
@@ -38,7 +39,7 @@ Was behoben / ergaenzt ist
   erscheinen dadurch unverzerrt (FixUIAspect).
 * Modell-LOD: immer hoechste Modelldetailstufe (ModelQuality=high).
 * Intro-Logos ueberspringen, deutsche Texte/Untertitel (Language=Ger).
-* Alt+F4 beendet das Spiel.
+* Alt+F4 beendet das Spiel (sauber ueber den quit-Befehl der Engine).
 * EAX und 5.1/7.1 ueber DSOAL + OpenAL Soft (LGPL, github.com/kcat): Ausgabe folgt der
   Windows-Lautsprecherkonfiguration, bei Kopfhoerern HRTF. Einstellungen: alsoft.ini.
 * Windows-HDR: Gamma-Rampe des Spiels wird unter HDR uebergangen und beim Beenden

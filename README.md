@@ -47,8 +47,10 @@ das Spiel schreibt diese Werte auch selbst.
   Die Engine sah vorher nur die ersten 512 Anzeigemodi.
 - **Xbox-Controller über XInput** in Spiel und Menüs (inklusive Bildschirmtastatur), Belegung wie auf der Xbox.
   Der rechte Stick läuft über den Mauspfad, damit das Umsehen pro Bild flüssig ist.
-- **Vibration:** Die Original-Hüllkurven des Spiels steuern beide Motoren an. Die Engine hängte Effekte nur an ein
-  DirectInput-Pad, deshalb meldet der Fix das XInput-Pad als aktiv.
+- **Vibration:** In der PC-Fassung ist das Abspielen der Rüttel-Effekte herauskompiliert. Das Spiel liest den
+  Effektnamen und verwirft ihn, und `Content/Feedback/feedback.xrg` (51 Hüllkurven der Xbox-Fassung) lädt kein
+  PC-Modul. Der Fix liest die Kurven selbst, fängt den Effektnamen ab und steuert damit beide Motoren
+  (Kanal 0 links, Kanal 1 rechts). Die Spieloption „Vibration“ bleibt wirksam.
 - **EAX und 5.1/7.1:** Windows hat seit Vista keine DirectSound-Hardwarestimmen und kein EAX mehr, 3D-Klänge
   werden nur in Stereo verteilt. Mit [DSOAL](https://github.com/kcat/dsoal) und
   [OpenAL Soft](https://github.com/kcat/openal-soft) (`dsound.dll`, `dsoal-aldrv.dll`, `alsoft.ini` neben
@@ -63,7 +65,8 @@ das Spiel schreibt diese Werte auch selbst.
 - **Seitenverhältnis der 2D-Ebene:** Menüs und HUD sind ein festes 640×480-Raster. Schriften und Knopfsymbole
   werden vorgestaucht erzeugt und erscheinen auf 16:9/21:9 unverzerrt.
 - **Grafik:** Shader-Stufe „2.0++“ (SM3-Pfad) auf NVIDIA, Modell-LOD auf höchste Stufe.
-- **Sonstiges:** Intro-Logos überspringen, deutsche Texte und Untertitel, Alt+F4 beendet das Spiel.
+- **Sonstiges:** Intro-Logos überspringen, deutsche Texte und Untertitel, Alt+F4 beendet das Spiel sauber über
+  den Konsolenbefehl `quit` der Engine.
 
 Alle Optionen sind in [`dist/RiddickFix.ini`](dist/RiddickFix.ini) kommentiert, die deutsche Kurzanleitung steht in
 [`dist/LIESMICH.txt`](dist/LIESMICH.txt).

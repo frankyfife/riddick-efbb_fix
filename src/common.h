@@ -75,6 +75,10 @@ void Display_Shutdown();                               // restore gamma ramp / d
 void Input_PatchModule(HMODULE mod, const char* name);
 void Input_Init();
 void Input_StopRumble();
+void Rumble_Init();                                    // rumble.cpp: feedback.xrg player
+void Rumble_PatchGameClasses(HMODULE gc);
+void Rumble_GetForces(float& left, float& right);
+void Rumble_Stop();
 void Fov_PatchMSystem(HMODULE msys);
 void Prompts_PatchExe(HMODULE exe);
 void Files_PatchModule(HMODULE mod);

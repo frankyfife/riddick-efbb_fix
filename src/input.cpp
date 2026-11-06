@@ -300,10 +300,13 @@ static void Rumble(void* ctx)
 {
     if (!pXInputSetState || g_activePad < 0) return;
     float l = 0, r = 0;
-    if (g_cfg.vibration && pEnvForce) {
-        double t = (double)pTicks() * (double)pTimerScale(pTimerObj());
-        l = pEnvForce((uint8_t*)ctx + 0xac8, 0, &t, 0);
-        r = pEnvForce((uint8_t*)ctx + 0xac8, 0, &t, 1);
+    if (g_cfg.vibration) {
+        Rumble_GetForces(l, r);                  // our feedback.xrg player (rumble.cpp)
+        if (pEnvForce) {                         // engine envelopes, should anything ever add one
+            double t = (double)pTicks() * (double)pTimerScale(pTimerObj());
+            l = fmaxf(l, pEnvForce((uint8_t*)ctx + 0xac8, 0, &t, 0));
+            r = fmaxf(r, pEnvForce((uint8_t*)ctx + 0xac8, 0, &t, 1));
+        }
     }
     WORD ml = (WORD)(fminf(fmaxf(l * g_cfg.vibrationGain, 0.0f), 1.0f) * 65535.0f);
     WORD mr = (WORD)(fminf(fmaxf(r * g_cfg.vibrationGain, 0.0f), 1.0f) * 65535.0f);
@@ -321,31 +324,51 @@ void Input_StopRumble()
 }
 
 // Alt+F4: the engine swallows it (DirectInput keyboard), so watch for it here.
-static void CheckAltF4()
+// First ask the engine to quit through its console ("quit" -> CSystemCore::
+// Parser_Quit) so the renderer, window and display state are torn down
+// normally - a hard kill left the HDR output of the TV/driver in a bad state.
+// Only if the engine has not exited after 3 s, end the process.
+typedef bool(__fastcall* PFN_ConExecute)(void* cstrByValue);
+typedef void* (__fastcall* PFN_CStrCtorFmt)(void* self, const char* fmt, ...);
+static bool EngineQuit()
 {
-    if ((GetAsyncKeyState(VK_MENU) & 0x8000) && (GetAsyncKeyState(VK_F4) & 0x8000)) {
-        Log("Alt+F4 -> quitting");
-        Input_StopRumble();
-        Display_Shutdown();
-        ChangeDisplaySettingsA(nullptr, 0);
-        TerminateProcess(GetCurrentProcess(), 0);
-    }
+    static const uint8_t ctorExpect[] = { 0x48,0x89,0x54,0x24,0x10, 0x48,0x89,0x4C,0x24,0x08 };
+    uint8_t* ctor = (uint8_t*)0x464480;          // SbzEngine CStr(const char* fmt, ...) (fixed base)
+    HMODULE exe = GetModuleHandleA("SbzEngine.exe");
+    HMODULE ms = GetModuleHandleA("MSystem.dll");
+    if (exe != (HMODULE)0x400000 || !ms || memcmp(ctor, ctorExpect, sizeof(ctorExpect)) != 0) return false;
+    auto exec = (PFN_ConExecute)GetProcAddress(ms, "?ConExecute@@YA_NVCStr@@@Z");
+    if (!exec) return false;
+    alignas(16) uint8_t cstr[32] = {};
+    ((PFN_CStrCtorFmt)ctor)(cstr, "quit");
+    exec(cstr);                                  // by-value CStr: the callee destroys it
+    return true;
 }
 
-// The game attaches feedback envelopes only to a "physical pad":
-// AppendEnvelope -> GetPhysicalPad -> IsGamepadActive(0), which tests the
-// last-gamepad-activity time at ctx+0xAA8. Only the DirectInput joystick (which
-// we switch off) writes it, so without this every rumble effect is dropped.
-static void MarkGamepadActive(void* ctx)
+static void CheckAltF4()
 {
-    if (!g_cfg.vibration || !pTicks || g_activePad < 0) return;
-    double t = (double)pTicks() * (double)pTimerScale(pTimerObj());
-    if (t > 0.0) *(double*)((uint8_t*)ctx + 0xaa8) = t;
+    static ULONGLONG quitAt;
+    if (quitAt) {
+        if (GetTickCount64() - quitAt > 3000) {
+            Log("Alt+F4: engine did not quit, ending process");
+            Input_StopRumble();
+            Display_Shutdown();
+            TerminateProcess(GetCurrentProcess(), 0);
+        }
+        return;
+    }
+    if ((GetAsyncKeyState(VK_MENU) & 0x8000) && (GetAsyncKeyState(VK_F4) & 0x8000)) {
+        Input_StopRumble();
+        Rumble_Stop();
+        bool ok = EngineQuit();
+        Log("Alt+F4 -> %s", ok ? "engine quit" : "quit command unavailable");
+        quitAt = GetTickCount64();
+        if (!ok) quitAt -= 3000;
+    }
 }
 
 static void __fastcall Hook_Update(void* ctx)
 {
-    MarkGamepadActive(ctx);
     o_Update(ctx);
     PadToEngine(ctx);
     Rumble(ctx);

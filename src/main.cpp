@@ -102,7 +102,7 @@ void OnModuleLoaded(HMODULE mod, const char* name)
     Files_PatchModule(mod);
     if (!_stricmp(name, "MSystem.dll")) Fov_PatchMSystem(mod);
     if (!_stricmp(name, "SbzEngine.exe")) Prompts_PatchExe(mod);
-    if (!_strnicmp(name, "GameClasses", 11)) Prompts_PatchGameClasses(mod);
+    if (!_strnicmp(name, "GameClasses", 11)) { Prompts_PatchGameClasses(mod); Rumble_PatchGameClasses(mod); }
     Input_PatchModule(mod, name);
 }
 
@@ -136,6 +136,7 @@ BOOL APIENTRY DllMain(HMODULE h, DWORD reason, LPVOID)
         MenuGen_Run();
         StringGen_Run();
         Input_Init();
+        Rumble_Init();
         ScanModules();
     } else if (reason == DLL_PROCESS_DETACH) {
         Input_StopRumble();

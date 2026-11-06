@@ -56,6 +56,65 @@ static BOOL WINAPI Hook_EnumDisplaySettingsA(LPCSTR dev, DWORD idx, DEVMODEA* dm
 
 static bool g_modeChanged;
 
+// ---- Windows HDR -------------------------------------------------------------------
+// Under Windows HDR ("advanced colour") a legacy gamma ramp and an exclusive
+// mode switch both disturb the desktop's colour pipeline; a ramp left behind
+// (e.g. after Alt+F4) keeps the desktop washed out after the game is closed.
+static bool IsHdrActive()
+{
+    UINT32 np = 0, nm = 0;
+    if (GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &np, &nm) != ERROR_SUCCESS) return false;
+    std::vector<DISPLAYCONFIG_PATH_INFO> paths(np);
+    std::vector<DISPLAYCONFIG_MODE_INFO> modes(nm);
+    if (QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &np, paths.data(), &nm, modes.data(), nullptr) != ERROR_SUCCESS) return false;
+    for (UINT32 i = 0; i < np; ++i) {
+        DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO ci = {};
+        ci.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO;
+        ci.header.size = sizeof(ci);
+        ci.header.adapterId = paths[i].targetInfo.adapterId;
+        ci.header.id = paths[i].targetInfo.id;
+        if (DisplayConfigGetDeviceInfo(&ci.header) == ERROR_SUCCESS && ci.advancedColorEnabled) return true;
+    }
+    return false;
+}
+
+static bool g_hdr;
+static WORD g_origRamp[3][256];
+static bool g_haveOrigRamp, g_rampChanged;
+
+static void CaptureRamp()
+{
+    if (g_haveOrigRamp) return;
+    if (HDC dc = GetDC(nullptr)) {
+        g_haveOrigRamp = GetDeviceGammaRamp(dc, g_origRamp) != FALSE;
+        ReleaseDC(nullptr, dc);
+    }
+    if (!g_haveOrigRamp)   // identity
+        for (int c = 0; c < 3; ++c) for (int i = 0; i < 256; ++i) g_origRamp[c][i] = (WORD)(i * 257);
+    g_haveOrigRamp = true;
+}
+
+static BOOL WINAPI Hook_SetDeviceGammaRamp(HDC dc, LPVOID ramp)
+{
+    bool allow = g_cfg.gammaRamp == 1 || (g_cfg.gammaRamp == -1 && !g_hdr);
+    static int logged;
+    if (logged++ < 3) Log("display: game gamma ramp %s", allow ? "applied" : "ignored (HDR)");
+    if (!allow) return TRUE;
+    CaptureRamp();
+    g_rampChanged = true;
+    return SetDeviceGammaRamp(dc, ramp);
+}
+
+void Display_Shutdown()
+{
+    if (g_rampChanged) {
+        if (HDC dc = GetDC(nullptr)) { SetDeviceGammaRamp(dc, g_origRamp); ReleaseDC(nullptr, dc); }
+        g_rampChanged = false;
+        Log("display: gamma ramp restored");
+    }
+    if (g_modeChanged) { ChangeDisplaySettingsA(nullptr, 0); g_modeChanged = false; }
+}
+
 static LONG WINAPI Hook_ChangeDisplaySettingsA(DEVMODEA* dm, DWORD flags)
 {
     if (!dm) {   // restore
@@ -66,9 +125,10 @@ static LONG WINAPI Hook_ChangeDisplaySettingsA(DEVMODEA* dm, DWORD flags)
     }
     Log("display: engine requests %lux%lu %lubpp @%luHz flags %lx", dm->dmPelsWidth, dm->dmPelsHeight,
         dm->dmBitsPerPel, dm->dmDisplayFrequency, flags);
-    if (g_cfg.borderless && dm->dmPelsWidth == g_desktop.dmPelsWidth && dm->dmPelsHeight == g_desktop.dmPelsHeight) {
+    bool skip = g_cfg.borderless == 1 || (g_cfg.borderless == -1 && g_hdr);
+    if (skip && dm->dmPelsWidth == g_desktop.dmPelsWidth && dm->dmPelsHeight == g_desktop.dmPelsHeight) {
         if (g_modeChanged) { ChangeDisplaySettingsA(nullptr, 0); g_modeChanged = false; }
-        Log("display: native resolution, no mode switch (Borderless=1)");
+        Log("display: native resolution, no mode switch (%s)", g_cfg.borderless == 1 ? "Borderless=1" : "HDR active");
         return DISP_CHANGE_SUCCESSFUL;
     }
     // other resolutions: real fullscreen mode switch with the best refresh rate
@@ -101,6 +161,10 @@ void Display_PatchModule(HMODULE rndr)
 {
     PatchIAT(rndr, "user32.dll", "CreateWindowExA", (void*)Hook_CreateWindowExA);
     if (g_modes.empty()) BuildModeList();
+    g_hdr = IsHdrActive();
+    CaptureRamp();
+    Log("display: Windows HDR %s", g_hdr ? "ON" : "off");
+    PatchIAT(rndr, "gdi32.dll", "SetDeviceGammaRamp", (void*)Hook_SetDeviceGammaRamp);
     PatchIAT(rndr, "user32.dll", "EnumDisplaySettingsA", (void*)Hook_EnumDisplaySettingsA);
     PatchIAT(rndr, "user32.dll", "ChangeDisplaySettingsA", (void*)Hook_ChangeDisplaySettingsA);
 }

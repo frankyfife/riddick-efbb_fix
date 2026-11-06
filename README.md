@@ -29,10 +29,11 @@ Alle Code-Patches prüfen vor dem Schreiben die Original-Bytes. Weicht eine Date
 
 ## Installation
 
-`winmm.dll` und `RiddickFix.ini` nach `<Spiel>\System\Win64_AMD64\` kopieren und das Spiel wie gewohnt über
+`winmm.dll` und `RiddickFix.ini` (optional für EAX/Surround zusätzlich `dsound.dll`, `dsoal-aldrv.dll` und
+`alsoft.ini`) nach `<Spiel>\System\Win64_AMD64\` kopieren und das Spiel wie gewohnt über
 `Riddick.exe` starten.
 
-Entfernen: beide Dateien und den Ordner `RiddickFix_cache` löschen. Die Spieldateien bleiben unverändert.
+Entfernen: diese Dateien und den Ordner `RiddickFix_cache` löschen. Die Spieldateien bleiben unverändert.
 Ausnahme ist `Environment.cfg`, in die der Fix `VID_MODE`, `LANGUAGE`, `XR_SHADERMODE` und `xr_lodoffset` schreibt;
 das Spiel schreibt diese Werte auch selbst.
 
@@ -48,9 +49,15 @@ das Spiel schreibt diese Werte auch selbst.
   Der rechte Stick läuft über den Mauspfad, damit das Umsehen pro Bild flüssig ist.
 - **Vibration:** Die Original-Hüllkurven des Spiels steuern beide Motoren an. Die Engine hängte Effekte nur an ein
   DirectInput-Pad, deshalb meldet der Fix das XInput-Pad als aktiv.
-- **EAX/Surround:** Windows hat seit Vista keine DirectSound-Hardwarestimmen und kein EAX mehr, 3D-Klänge werden
-  nur in Stereo verteilt. Liegt [DSOAL](https://github.com/kcat/dsoal) (`dsound.dll` + `dsoal-aldrv.dll`) neben
-  `SbzEngine.exe`, schaltet der Fix EAX automatisch ein (`[Audio] EAX=auto`).
+- **EAX und 5.1/7.1:** Windows hat seit Vista keine DirectSound-Hardwarestimmen und kein EAX mehr, 3D-Klänge
+  werden nur in Stereo verteilt. Mit [DSOAL](https://github.com/kcat/dsoal) und
+  [OpenAL Soft](https://github.com/kcat/openal-soft) (`dsound.dll`, `dsoal-aldrv.dll`, `alsoft.ini` neben
+  `SbzEngine.exe`) meldet DirectSound wieder 128 Hardware-3D-Stimmen sowie EAX 2/3. Der Fix schaltet EAX dann
+  automatisch ein (`[Audio] EAX=auto`). Die Ausgabe folgt der Windows-Lautsprecherkonfiguration (5.1/7.1),
+  bei Kopfhörern wird HRTF verwendet. Bauen: `tools\build_audio.ps1`.
+- **Windows-HDR:** Unter HDR übergeht der Fix die Gamma-Rampe des Spiels und den Moduswechsel bei nativer
+  Auflösung. Beim Beenden, auch mit Alt+F4, stellt er die ursprüngliche Rampe wieder her. Vorher war der
+  HDR-Desktop nach dem Spiel verfälscht.
 - **Xbox-Knopfsymbole:** farbige Glyphen im Fließtext, Menü-Hinweise wie auf der Konsole, Hilfe im HUD über das
   Steuerkreuz.
 - **Seitenverhältnis der 2D-Ebene:** Menüs und HUD sind ein festes 640×480-Raster. Schriften und Knopfsymbole
@@ -78,3 +85,10 @@ Aufbau:
   `%TEMP%\RiddickFixTest`.
 - `art/`: eigene Knopfgrafiken (LB/RB/LT/RT usw.). A/B/X/Y werden zur Laufzeit aus der `GUI.xtc` des Spiels
   übernommen; das Repo enthält keine Spieldaten.
+
+## Drittkomponenten
+
+`dsound.dll` (DSOAL) und `dsoal-aldrv.dll` (OpenAL Soft) stammen unverändert aus den Quellen von
+[kcat/dsoal](https://github.com/kcat/dsoal) und [kcat/openal-soft](https://github.com/kcat/openal-soft).
+Beide stehen unter der GNU LGPL 2.1 oder neuer und werden mit `tools\build_audio.ps1` gebaut
+(Ergebnis in `build\audio\`).

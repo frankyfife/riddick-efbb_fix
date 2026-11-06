@@ -16,7 +16,8 @@ struct Config {
     int  resMode;              // 0 = keep in-game choice, 1 = force (Width/Height, 0 = desktop)
     int  width, height;        // 0 = desktop resolution
     int  refresh;              // 0 = desktop refresh rate
-    int  borderless;           // 1 = borderless window instead of exclusive mode switch
+    int  borderless;           // 1 = no mode switch at desktop resolution, -1 = auto (when HDR is on)
+    int  gammaRamp;            // 1 = allow the game's gamma ramp, 0 = ignore, -1 = auto (ignore under HDR)
     int  vsync;                // -1 = keep game setting, 0 = off, 1 = on
     int  fpsLimit;             // 0 = unlimited
     int  fixFov;               // Hor+ widescreen correction
@@ -70,6 +71,7 @@ void OnModuleLoaded(HMODULE mod, const char* name);   // dispatcher
 void GL_PatchModule(HMODULE rndr);                     // renderer (RndrGL.dll)
 void Display_PatchModule(HMODULE rndr);
 void Display_PrepareConfig();
+void Display_Shutdown();                               // restore gamma ramp / desktop mode
 void Input_PatchModule(HMODULE mod, const char* name);
 void Input_Init();
 void Input_StopRumble();

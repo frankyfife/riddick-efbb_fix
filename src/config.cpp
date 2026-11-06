@@ -23,7 +23,11 @@ void ConfigLoad()
     g_cfg.width      = GetI(path, L"Display", L"Width", 0);
     g_cfg.height     = GetI(path, L"Display", L"Height", 0);
     g_cfg.refresh    = GetI(path, L"Display", L"RefreshRate", 0);
-    g_cfg.borderless = GetI(path, L"Display", L"Borderless", 0);
+    {
+        wchar_t b[16]; GetPrivateProfileStringW(L"Display", L"Borderless", L"auto", b, 16, path);
+        g_cfg.borderless = !_wcsicmp(b, L"auto") ? -1 : _wtoi(b);   // -1 = only when Windows HDR is on
+    }
+    g_cfg.gammaRamp  = GetI(path, L"Display", L"GammaRamp", -1);   // -1 = auto (off under HDR)
     g_cfg.vsync      = GetI(path, L"Display", L"VSync", -1);
     g_cfg.fpsLimit   = GetI(path, L"Display", L"FPSLimit", 0);
     g_cfg.fixFov     = GetI(path, L"Display", L"WidescreenFOV", 1);

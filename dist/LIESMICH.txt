@@ -3,7 +3,8 @@ RiddickFix - The Chronicles of Riddick: Escape From Butcher Bay (PC 2004)
 
 Installation
 ------------
-winmm.dll und RiddickFix.ini nach
+winmm.dll und RiddickFix.ini (fuer EAX/Surround zusaetzlich dsound.dll,
+dsoal-aldrv.dll und alsoft.ini) nach
     <Spiel>\System\Win64_AMD64\
 kopieren. Spiel wie gewohnt ueber Riddick.exe starten (unter 64-Bit-Windows
 startet sie automatisch die 64-Bit-Fassung, die keinen Kopierschutz hat).
@@ -38,5 +39,9 @@ Was behoben / ergaenzt ist
 * Modell-LOD: immer hoechste Modelldetailstufe (ModelQuality=high).
 * Intro-Logos ueberspringen, deutsche Texte/Untertitel (Language=Ger).
 * Alt+F4 beendet das Spiel.
+* EAX und 5.1/7.1 ueber DSOAL + OpenAL Soft (LGPL, github.com/kcat): Ausgabe folgt der
+  Windows-Lautsprecherkonfiguration, bei Kopfhoerern HRTF. Einstellungen: alsoft.ini.
+* Windows-HDR: Gamma-Rampe des Spiels wird unter HDR uebergangen und beim Beenden
+  (auch Alt+F4) zurueckgesetzt - der Desktop bleibt danach korrekt.
 
 Einstellungen: siehe RiddickFix.ini (kommentiert).

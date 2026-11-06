@@ -126,12 +126,20 @@ BOOL APIENTRY DllMain(HMODULE h, DWORD reason, LPVOID)
             if (auto f = (SetCtx)GetProcAddress(GetModuleHandleW(L"user32.dll"), "SetProcessDpiAwarenessContext"))
                 Log("DPI awareness: %s (err %lu)", f(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) ? "per-monitor v2" : "FAILED", GetLastError());
         }
+        if (g_cfg.engineLog) {   // DSOAL (if installed) logs into the cache folder
+            wchar_t lf[MAX_PATH]; swprintf_s(lf, L"%s\\RiddickFix_cache\\dsoal.log", g_dllDir);
+            SetEnvironmentVariableW(L"DSOAL_LOGFILE", lf);
+            SetEnvironmentVariableW(L"DSOAL_LOGLEVEL", L"2");
+        }
         Display_PrepareConfig();
         FontGen_Run();
         MenuGen_Run();
         StringGen_Run();
         Input_Init();
         ScanModules();
+    } else if (reason == DLL_PROCESS_DETACH) {
+        Input_StopRumble();
+        Display_Shutdown();
     }
     return TRUE;
 }

@@ -326,6 +326,7 @@ static void CheckAltF4()
     if ((GetAsyncKeyState(VK_MENU) & 0x8000) && (GetAsyncKeyState(VK_F4) & 0x8000)) {
         Log("Alt+F4 -> quitting");
         Input_StopRumble();
+        Display_Shutdown();
         ChangeDisplaySettingsA(nullptr, 0);
         TerminateProcess(GetCurrentProcess(), 0);
     }

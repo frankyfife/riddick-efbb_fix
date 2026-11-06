@@ -41,6 +41,10 @@ void ConfigLoad()
         wchar_t mq[16]; GetPrivateProfileStringW(L"Renderer", L"ModelQuality", L"high", mq, 16, path);
         g_cfg.modelLod = !_wcsicmp(mq, L"high") ? 1 : !_wcsicmp(mq, L"normal") ? 0 : -1;
     }
+    {
+        wchar_t e[16]; GetPrivateProfileStringW(L"Audio", L"EAX", L"auto", e, 16, path);
+        g_cfg.eax = !_wcsicmp(e, L"auto") ? -2 : !_wcsicmp(e, L"keep") ? -1 : _wtoi(e) ? 1 : 0;
+    }
     g_cfg.xinput     = GetI(path, L"Controller", L"Enable", 1);
     g_cfg.xboxPrompts= GetI(path, L"Controller", L"XboxPrompts", 1);
     g_cfg.skipIntro  = GetI(path, L"Game", L"SkipIntro", 1);

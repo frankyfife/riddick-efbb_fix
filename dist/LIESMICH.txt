@@ -27,7 +27,8 @@ Was behoben / ergaenzt ist
     LT Block/Sekundaer   RT Angriff/Feuer   LB Taschenlampe   RB Zoom
     D-Pad links/rechts/oben: Lehnen   D-Pad unten: Hilfe
     Back: Journal   Start: Pause
-* Vibration aus den Original-Huellkurven des Spiels (Content\Feedback).
+* Vibration aus den Original-Huellkurven des Spiels (Content\Feedback); die Engine
+  verwarf sie ohne DirectInput-Pad, der Fix meldet das XInput-Pad als aktiv.
 * Xbox-Knopfsymbole: farbige Original-Glyphen (A/B/X/Y aus GUI.xtc) im
   Fliesstext, Menue-Hinweise wie auf der Konsole, "Hilfe" im HUD mit D-Pad.
 * Seitenverhaeltnis der 2D-Elemente: Menues/HUD sind ein festes 640x480-Raster,

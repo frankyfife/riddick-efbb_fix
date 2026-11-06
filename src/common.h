@@ -27,7 +27,8 @@ struct Config {
     int  maxTexSize;
     int  shaderMode;           // -1 = keep, -2 = auto (2.0++ on NVIDIA), 0..6
     int  anisotropy;           // 0 = game setting, else force (1..16)
-    int  modelLod;             // -1 = keep game setting, 0 = normal, 1 = high (always full detail)
+    int  eax;                  // -2 = auto (on when DSOAL is installed), -1 = keep, 0 = off, 1 = on
+    int  modelLod;            // -1 = keep game setting, 0 = normal, 1 = high (always full detail)
     // input
     int  xinput;               // 1 = native Xbox controller support
     int  xboxPrompts;          // 1 = Xbox button names/glyphs instead of keyboard names

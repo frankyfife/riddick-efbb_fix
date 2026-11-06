@@ -174,6 +174,21 @@ void Display_PrepareConfig()
     if (sm >= 0 && sm <= 6) { char v[8]; sprintf_s(v, "%d", sm); SetCfgKey("XR_SHADERMODE", v); }
     // model LOD: the in-game "model quality: high" is xr_lodoffset -1000000
     // (always the most detailed LOD); "normal" (0) swaps models down early.
+    // EAX needs DirectSound "hardware" voices and the EAX property sets, which
+    // Windows has not had since Vista. With DSOAL (dsound.dll + dsoal-aldrv.dll
+    // next to SbzEngine.exe -> OpenAL Soft) both exist again, plus 5.1/7.1.
+    {
+        wchar_t p1[MAX_PATH], p2[MAX_PATH];
+        swprintf_s(p1, L"%s\\dsound.dll", g_dllDir);
+        swprintf_s(p2, L"%s\\dsoal-aldrv.dll", g_dllDir);
+        bool dsoal = GetFileAttributesW(p1) != INVALID_FILE_ATTRIBUTES && GetFileAttributesW(p2) != INVALID_FILE_ATTRIBUTES;
+        int eax = g_cfg.eax == -2 ? (dsoal ? 1 : -1) : g_cfg.eax;
+        Log("audio: DSOAL %s, EAX %s", dsoal ? "found" : "not installed", eax == 1 ? "on" : eax == 0 ? "off" : "game setting");
+        if (eax >= 0) {
+            SetCfgKey("snd_use3d", "1");
+            SetCfgKey("snd_useeax", eax ? "1" : "0");
+        }
+    }
     if (g_cfg.modelLod == 1) SetCfgKey("xr_lodoffset", "-1000000.000000");
     else if (g_cfg.modelLod == 0) SetCfgKey("xr_lodoffset", "0.000000");
     DEVMODEA d = {}; d.dmSize = sizeof(d);

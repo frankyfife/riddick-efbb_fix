@@ -307,6 +307,8 @@ static void Rumble(void* ctx)
     }
     WORD ml = (WORD)(fminf(fmaxf(l * g_cfg.vibrationGain, 0.0f), 1.0f) * 65535.0f);
     WORD mr = (WORD)(fminf(fmaxf(r * g_cfg.vibrationGain, 0.0f), 1.0f) * 65535.0f);
+    static bool logged;
+    if (!logged && (ml || mr)) { logged = true; Log("input: first rumble effect (%.2f / %.2f)", l, r); }
     if (ml == g_motorL && mr == g_motorR) return;
     g_motorL = ml; g_motorR = mr;
     XINPUT_VIBRATION v = { ml, mr };
@@ -329,8 +331,20 @@ static void CheckAltF4()
     }
 }
 
+// The game attaches feedback envelopes only to a "physical pad":
+// AppendEnvelope -> GetPhysicalPad -> IsGamepadActive(0), which tests the
+// last-gamepad-activity time at ctx+0xAA8. Only the DirectInput joystick (which
+// we switch off) writes it, so without this every rumble effect is dropped.
+static void MarkGamepadActive(void* ctx)
+{
+    if (!g_cfg.vibration || !pTicks || g_activePad < 0) return;
+    double t = (double)pTicks() * (double)pTimerScale(pTimerObj());
+    if (t > 0.0) *(double*)((uint8_t*)ctx + 0xaa8) = t;
+}
+
 static void __fastcall Hook_Update(void* ctx)
 {
+    MarkGamepadActive(ctx);
     o_Update(ctx);
     PadToEngine(ctx);
     Rumble(ctx);

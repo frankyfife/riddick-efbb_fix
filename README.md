@@ -46,6 +46,11 @@ das Spiel schreibt diese Werte auch selbst.
   Die Engine sah vorher nur die ersten 512 Anzeigemodi.
 - **Xbox-Controller über XInput** in Spiel und Menüs (inklusive Bildschirmtastatur), Belegung wie auf der Xbox.
   Der rechte Stick läuft über den Mauspfad, damit das Umsehen pro Bild flüssig ist.
+- **Vibration:** Die Original-Hüllkurven des Spiels steuern beide Motoren an. Die Engine hängte Effekte nur an ein
+  DirectInput-Pad, deshalb meldet der Fix das XInput-Pad als aktiv.
+- **EAX/Surround:** Windows hat seit Vista keine DirectSound-Hardwarestimmen und kein EAX mehr, 3D-Klänge werden
+  nur in Stereo verteilt. Liegt [DSOAL](https://github.com/kcat/dsoal) (`dsound.dll` + `dsoal-aldrv.dll`) neben
+  `SbzEngine.exe`, schaltet der Fix EAX automatisch ein (`[Audio] EAX=auto`).
 - **Xbox-Knopfsymbole:** farbige Glyphen im Fließtext, Menü-Hinweise wie auf der Konsole, Hilfe im HUD über das
   Steuerkreuz.
 - **Seitenverhältnis der 2D-Ebene:** Menüs und HUD sind ein festes 640×480-Raster. Schriften und Knopfsymbole

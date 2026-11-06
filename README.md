@@ -1,21 +1,25 @@
-# RiddickFix: Escape From Butcher Bay auf modernen Systemen
+# RiddickFix: Escape From Butcher Bay on modern systems
 
-Drop-in-Fix (`winmm.dll`) für die PC-Fassung von *The Chronicles of Riddick: Escape From Butcher Bay* (2004).
-Kein ASI-Loader und keine veränderten Spieldateien. Die DLL wird neben die Engine gelegt und zur Laufzeit geladen.
+Drop-in fix (`winmm.dll`) for the PC release of *The Chronicles of Riddick: Escape From Butcher Bay* (2004).
+No ASI loader and no modified game files: the DLL sits next to the engine and is loaded at run time.
 
-## Kompatibilität
+*Deutsche Fassung: [LIESMICH.md](LIESMICH.md)*
+
+**Download:** ready-built packages are on the [Releases](https://github.com/frankyfife/riddick-efbb_fix/releases) page.
+
+## Compatibility
 
 | | |
 |---|---|
-| **Getestet mit** | PC-Retail-Fassung (Vivendi Universal, Europa, Englisch/Deutsch/Französisch) mit **Patch 1.1** |
-| **Benötigt** | den 64-Bit-Zweig `System\Win64_AMD64\` (gehört zu Patch 1.1 und wird von `Riddick.exe` unter 64-Bit-Windows automatisch gestartet) |
-| **Betriebssystem** | Windows 10/11, 64 Bit |
-| **Grafik** | jede aktuelle OpenGL-Karte; die SM3-Stufe „2.0++“ wird automatisch nur auf NVIDIA eingeschaltet |
-| **Nicht unterstützt** | 32-Bit-Builds (`Win32_x86*`, SecuROM-geschützt; der Kopierschutz wird bewusst nicht angefasst), Version 1.0 ohne 64-Bit-Zweig, *Assault on Dark Athena* (eigene Engine-Version, siehe dort) |
+| **Tested with** | PC retail release (Vivendi Universal, Europe, English/German/French) with **patch 1.1** |
+| **Requires** | the 64-bit branch `System\Win64_AMD64\` (part of patch 1.1; `Riddick.exe` starts it automatically on 64-bit Windows) |
+| **Operating system** | Windows 10/11, 64-bit |
+| **Graphics** | any current OpenGL card; shader level "2.0++" (SM3) is switched on automatically on NVIDIA only |
+| **Not supported** | 32-bit builds (`Win32_x86*`, SecuROM-protected; the copy protection is deliberately left alone), version 1.0 without the 64-bit branch, *Assault on Dark Athena* (different engine version, see [riddick-aoda-toolkit](https://github.com/frankyfife/riddick-aoda-toolkit)) |
 
-Referenzdateien der getesteten Installation:
+Reference files of the tested installation:
 
-| Datei | Größe (Bytes) | SHA-256 (Anfang) |
+| File | Size (bytes) | SHA-256 (first 16) |
 |---|---|---|
 | `Riddick.exe` | 167 936 | `9E44ED5386F4EAB7` |
 | `System\Win64_AMD64\SbzEngine.exe` (1.0.0.1) | 965 632 | `5056FFE030C2BA86` |
@@ -24,74 +28,72 @@ Referenzdateien der getesteten Installation:
 | `Content\GameWorld_Win64_AMD64.dll` | 2 837 504 | `749D018C8DCDED11` |
 | `Content\GameClasses_Win64_AMD64.dll` | 3 712 000 | `263C03A430F070EB` |
 
-Alle Code-Patches prüfen vor dem Schreiben die Original-Bytes. Weicht eine Datei ab, wird der betreffende Patch
-übersprungen und in `RiddickFix.log` vermerkt, statt das Spiel zum Absturz zu bringen.
+Every code patch checks the original bytes before writing. If a file differs, that patch is skipped and noted
+in `RiddickFix.log` instead of crashing the game.
 
 ## Installation
 
-`winmm.dll` und `RiddickFix.ini` (optional für EAX/Surround zusätzlich `dsound.dll`, `dsoal-aldrv.dll` und
-`alsoft.ini`) nach `<Spiel>\System\Win64_AMD64\` kopieren und das Spiel wie gewohnt über
-`Riddick.exe` starten.
+Copy `winmm.dll` and `RiddickFix.ini` (for EAX/surround also `dsound.dll`, `dsoal-aldrv.dll` and `alsoft.ini`)
+to `<Game>\System\Win64_AMD64\` and start the game as usual via `Riddick.exe`.
 
-Entfernen: diese Dateien und den Ordner `RiddickFix_cache` löschen. Die Spieldateien bleiben unverändert.
-Ausnahme ist `Environment.cfg`, in die der Fix `VID_MODE`, `LANGUAGE`, `XR_SHADERMODE` und `xr_lodoffset` schreibt;
-das Spiel schreibt diese Werte auch selbst.
+To remove it, delete those files and the `RiddickFix_cache` folder. The game files stay untouched. The one
+exception is `Environment.cfg`, where the fix writes `VID_MODE`, `LANGUAGE`, `XR_SHADERMODE` and `xr_lodoffset` -
+values the game writes itself as well.
 
-## Was behoben bzw. ergänzt ist
+## What is fixed or added
 
-- **Absturz beim Start:** Die OpenGL-Erweiterungsliste moderner Treiber ist zu lang. Die Engine hielt deshalb
-  DXT-Texturen für nicht unterstützt.
-- **„Nur ein Viertel des Bildes“ bzw. Fischaugen-Effekt bei hohen Auflösungen:** Der Renderer begrenzte Texturen
-  auf 2048 Pixel, dadurch wurden Bildschirmkopien abgeschnitten.
-- **Auflösungen:** alle bis 3840×2160, Standard ist die Desktop-Auflösung mit Desktop-Bildrate (z. B. 4K/120 Hz).
-  Die Engine sah vorher nur die ersten 512 Anzeigemodi.
-- **Xbox-Controller über XInput** in Spiel und Menüs (inklusive Bildschirmtastatur), Belegung wie auf der Xbox.
-  Der rechte Stick läuft über den Mauspfad, damit das Umsehen pro Bild flüssig ist.
-- **Vibration:** In der PC-Fassung ist das Abspielen der Rüttel-Effekte herauskompiliert. Das Spiel liest den
-  Effektnamen und verwirft ihn, und `Content/Feedback/feedback.xrg` (51 Hüllkurven der Xbox-Fassung) lädt kein
-  PC-Modul. Der Fix liest die Kurven selbst, fängt den Effektnamen ab und steuert damit beide Motoren
-  (Kanal 0 links, Kanal 1 rechts). Die Spieloption „Vibration“ bleibt wirksam.
-- **EAX und 5.1/7.1:** Windows hat seit Vista keine DirectSound-Hardwarestimmen und kein EAX mehr, 3D-Klänge
-  werden nur in Stereo verteilt. Mit [DSOAL](https://github.com/kcat/dsoal) und
-  [OpenAL Soft](https://github.com/kcat/openal-soft) (`dsound.dll`, `dsoal-aldrv.dll`, `alsoft.ini` neben
-  `SbzEngine.exe`) meldet DirectSound wieder 128 Hardware-3D-Stimmen sowie EAX 2/3. Der Fix schaltet EAX dann
-  automatisch ein (`[Audio] EAX=auto`). Die Ausgabe folgt der Windows-Lautsprecherkonfiguration (5.1/7.1),
-  bei Kopfhörern wird HRTF verwendet. Bauen: `tools\build_audio.ps1`.
-- **Windows-HDR:** Unter HDR übergeht der Fix die Gamma-Rampe des Spiels und den Moduswechsel bei nativer
-  Auflösung. Beim Beenden, auch mit Alt+F4, stellt er die ursprüngliche Rampe wieder her. Vorher war der
-  HDR-Desktop nach dem Spiel verfälscht.
-- **Xbox-Knopfsymbole:** farbige Glyphen im Fließtext, Menü-Hinweise wie auf der Konsole, Hilfe im HUD über das
-  Steuerkreuz.
-- **Seitenverhältnis der 2D-Ebene:** Menüs und HUD sind ein festes 640×480-Raster. Schriften und Knopfsymbole
-  werden vorgestaucht erzeugt und erscheinen auf 16:9/21:9 unverzerrt.
-- **Grafik:** Shader-Stufe „2.0++“ (SM3-Pfad) auf NVIDIA, Modell-LOD auf höchste Stufe.
-- **Sonstiges:** Intro-Logos überspringen, deutsche Texte und Untertitel, Alt+F4 beendet das Spiel sauber über
-  den Konsolenbefehl `quit` der Engine.
+- **Crash on start:** the OpenGL extension string of current drivers is too long, so the engine concluded that
+  DXT textures were unsupported.
+- **"Only a quarter of the image" / fisheye look at high resolutions:** the renderer capped textures at 2048
+  pixels, which cut off its screen copies.
+- **Resolutions:** everything up to 3840×2160; the default is the desktop resolution and refresh rate
+  (e.g. 4K/120 Hz). The engine used to see only the first 512 display modes.
+- **Xbox controller via XInput** in game and menus (including the on-screen keyboard), mapped like the Xbox
+  version. The right stick goes through the mouse path, so looking around is smooth per frame.
+- **Vibration:** the PC release has rumble playback compiled out. The game reads the effect name and discards it,
+  and no PC module loads `Content/Feedback/feedback.xrg` (the 51 envelopes of the Xbox version). The fix reads
+  the curves itself, catches the effect name and drives both motors (channel 0 left, channel 1 right). The
+  in-game "Vibration" option still applies.
+- **EAX and 5.1/7.1:** since Vista Windows has no DirectSound hardware voices and no EAX, so 3D sounds are only
+  spread in stereo. With [DSOAL](https://github.com/kcat/dsoal) and
+  [OpenAL Soft](https://github.com/kcat/openal-soft) (`dsound.dll`, `dsoal-aldrv.dll`, `alsoft.ini` next to
+  `SbzEngine.exe`) DirectSound reports 128 hardware 3D voices and EAX 2/3 again, and the fix switches EAX on
+  automatically (`[Audio] EAX=auto`). Output follows the Windows speaker setup (5.1/7.1); headphones get HRTF.
+  Build: `tools\build_audio.ps1`.
+- **Windows HDR:** with HDR on, the fix skips the game's gamma ramp and the mode switch at native resolution, and
+  restores the original ramp on exit (Alt+F4 included). The HDR desktop used to stay discoloured after playing.
+- **Xbox button icons:** coloured glyphs in running text, console-style menu hints, help in the HUD on the d-pad.
+- **2D aspect ratio:** menus and HUD are a fixed 640×480 canvas. Fonts and button icons are generated
+  pre-squeezed and come out undistorted on 16:9/21:9.
+- **Graphics:** shader level "2.0++" (SM3 path) on NVIDIA, model LOD at the highest level.
+- **Other:** skip the intro logos, German texts and subtitles, Alt+F4 quits cleanly through the engine's `quit`
+  console command.
 
-Alle Optionen sind in [`dist/RiddickFix.ini`](dist/RiddickFix.ini) kommentiert, die deutsche Kurzanleitung steht in
+All options are commented in [`dist/RiddickFix.ini`](dist/RiddickFix.ini); a short German guide is in
 [`dist/LIESMICH.txt`](dist/LIESMICH.txt).
 
-## Bauen
+## Building
 
-Voraussetzungen: Visual Studio 2022 Build Tools (x64) und Python 3.
+Requirements: Visual Studio 2022 Build Tools (x64) and Python 3.
 
 ```bat
 build.cmd
 ```
 
-Ergebnis: `build\winmm.dll`.
+Output: `build\winmm.dll`.
 
-Aufbau:
+Layout:
 
-- `src/`: Proxy und Hooks.
-- `tools/`: Generatoren und Testhelfer. Die Testhelfer schreiben nach `%RIDDICKFIX_TESTDIR%` bzw.
+- `src/`: proxy and hooks.
+- `tools/`: generators and test helpers. The test helpers write to `%RIDDICKFIX_TESTDIR%` or
   `%TEMP%\RiddickFixTest`.
-- `art/`: eigene Knopfgrafiken (LB/RB/LT/RT usw.). A/B/X/Y werden zur Laufzeit aus der `GUI.xtc` des Spiels
-  übernommen; das Repo enthält keine Spieldaten.
+- `art/`: own button artwork (LB/RB/LT/RT etc.). A/B/X/Y are taken from the game's `GUI.xtc` at run time;
+  the repository contains no game data.
 
-## Drittkomponenten
+## Third-party components
 
-`dsound.dll` (DSOAL) und `dsoal-aldrv.dll` (OpenAL Soft) stammen unverändert aus den Quellen von
-[kcat/dsoal](https://github.com/kcat/dsoal) und [kcat/openal-soft](https://github.com/kcat/openal-soft).
-Beide stehen unter der GNU LGPL 2.1 oder neuer und werden mit `tools\build_audio.ps1` gebaut
-(Ergebnis in `build\audio\`).
+`dsound.dll` (DSOAL) and `dsoal-aldrv.dll` (OpenAL Soft) are built unmodified from the sources of
+[kcat/dsoal](https://github.com/kcat/dsoal) and [kcat/openal-soft](https://github.com/kcat/openal-soft).
+Both are licensed under the GNU LGPL 2.1 or later and are built with `tools\build_audio.ps1`
+(output in `build\audio\`). The release package `RiddickFix-*-EAX-DSOAL.zip` contains the licence texts and the
+exact upstream commits.

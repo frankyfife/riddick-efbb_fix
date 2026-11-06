@@ -1,0 +1,9 @@
+build/
+*.obj
+*.lib
+*.exp
+*.pdb
+*.log
+RiddickFix_cache/
+__pycache__/
+dist/winmm.dll

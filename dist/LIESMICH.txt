@@ -1,0 +1,41 @@
+RiddickFix - The Chronicles of Riddick: Escape From Butcher Bay (PC 2004)
+=========================================================================
+
+Installation
+------------
+winmm.dll und RiddickFix.ini nach
+    <Spiel>\System\Win64_AMD64\
+kopieren. Spiel wie gewohnt ueber Riddick.exe starten (unter 64-Bit-Windows
+startet sie automatisch die 64-Bit-Fassung, die keinen Kopierschutz hat).
+Entfernen: beide Dateien und den Ordner RiddickFix_cache loeschen - an den
+Spieldateien wird nichts veraendert (einzige Ausnahme: VID_MODE, LANGUAGE, XR_SHADERMODE und xr_lodoffset in
+<Spiel>\Environment.cfg, die das Spiel selbst ebenfalls schreibt).
+
+Was behoben / ergaenzt ist
+--------------------------
+* Absturz beim Start (zu lange OpenGL-Erweiterungsliste moderner Treiber ->
+  Engine hielt DXT-Texturen fuer nicht unterstuetzt).
+* "Nur ein Viertel des Bildes" / Fischaugen-Effekt bei hohen Aufloesungen:
+  RndrGL begrenzte Texturen auf 2048, Bildschirmkopien fuer Effekte wurden
+  abgeschnitten und gestreckt.
+* Alle Aufloesungen bis 3840x2160 (die Engine sah nur die ersten 512 Modi),
+  Standard = Desktop-Aufloesung und -Bildrate (z.B. 4K/120 Hz), DPI-korrekt.
+* Xbox-Controller (XInput) inkl. aller Menues, Bildschirmtastatur, Pause,
+  Journal; Belegung wie auf der Xbox (Default controller):
+    LS bewegen / Klick: Schleichen      RS umsehen / Klick: Nachtsicht
+    A Springen   B Nachladen   X Benutzen   Y Waffe wechseln
+    LT Block/Sekundaer   RT Angriff/Feuer   LB Taschenlampe   RB Zoom
+    D-Pad links/rechts/oben: Lehnen   D-Pad unten: Hilfe
+    Back: Journal   Start: Pause
+* Vibration aus den Original-Huellkurven des Spiels (Content\Feedback).
+* Xbox-Knopfsymbole: farbige Original-Glyphen (A/B/X/Y aus GUI.xtc) im
+  Fliesstext, Menue-Hinweise wie auf der Konsole, "Hilfe" im HUD mit D-Pad.
+* Seitenverhaeltnis der 2D-Elemente: Menues/HUD sind ein festes 640x480-Raster,
+  das auf 16:9 in die Breite gezogen wird. Schriften (Untertitel, Info-Texte,
+  Menue-Hinweise) und die A/B/X/Y-Symbole werden vorgestaucht erzeugt und
+  erscheinen dadurch unverzerrt (FixUIAspect).
+* Modell-LOD: immer hoechste Modelldetailstufe (ModelQuality=high).
+* Intro-Logos ueberspringen, deutsche Texte/Untertitel (Language=Ger).
+* Alt+F4 beendet das Spiel.
+
+Einstellungen: siehe RiddickFix.ini (kommentiert).

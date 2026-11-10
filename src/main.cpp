@@ -37,7 +37,8 @@ static bool IsGameModule(HMODULE m, char* outName, size_t n)
 {
     wchar_t path[MAX_PATH];
     if (!GetModuleFileNameW(m, path, MAX_PATH)) return false;
-    if (_wcsnicmp(path, g_gameRoot, wcslen(g_gameRoot)) != 0) return false;
+    size_t rl = wcslen(g_gameRoot);
+    if (_wcsnicmp(path, g_gameRoot, rl) != 0 || path[rl] != L'\\') return false;   // not a sibling folder
     if (m == g_self) return false;
     const wchar_t* fn = wcsrchr(path, L'\\');
     WideCharToMultiByte(CP_ACP, 0, fn ? fn + 1 : path, -1, outName, (int)n, nullptr, nullptr);
@@ -106,7 +107,7 @@ void OnModuleLoaded(HMODULE mod, const char* name)
     Input_PatchModule(mod, name);
 }
 
-BOOL APIENTRY DllMain(HMODULE h, DWORD reason, LPVOID)
+BOOL APIENTRY DllMain(HMODULE h, DWORD reason, LPVOID reserved)
 {
     if (reason == DLL_PROCESS_ATTACH) {
         g_self = h;
@@ -139,8 +140,11 @@ BOOL APIENTRY DllMain(HMODULE h, DWORD reason, LPVOID)
         Rumble_Init();
         ScanModules();
     } else if (reason == DLL_PROCESS_DETACH) {
-        Input_StopRumble();
+        // gamma ramp / desktop mode first. On process exit (reserved != NULL) XInput may
+        // already be detached and other threads are gone - calling into it there can end
+        // the process before the ramp is restored. Alt+F4 stops the motors earlier anyway.
         Display_Shutdown();
+        if (!reserved) Input_StopRumble();
     }
     return TRUE;
 }

@@ -179,6 +179,10 @@ static void SetCfgKey(const char* key, const char* value)
         char buf[4096]; size_t n;
         while ((n = fread(buf, 1, sizeof(buf), f)) > 0) text.append(buf, n);
         fclose(f);
+    } else if (GetFileAttributesW(path) != INVALID_FILE_ATTRIBUTES) {
+        // exists but cannot be read (locked): writing now would drop every other setting
+        Log("cfg: Environment.cfg not readable - %s left alone", key);
+        return;
     }
     char line[128];
     sprintf_s(line, "%s=%s", key, value);
@@ -195,8 +199,20 @@ static void SetCfgKey(const char* key, const char* value)
         out += l; out += "\r\n";
     }
     if (!found) { out += line; out += "\r\n"; }
-    if (out != text)
-        if (FILE* f = _wfopen(path, L"wb")) { fwrite(out.data(), 1, out.size(), f); fclose(f); }
+    if (out != text) {
+        // temp file + rename: a crash or a full disk never leaves a truncated cfg
+        std::wstring tmp = std::wstring(path) + L".riddickfix.tmp";
+        bool ok = false;
+        if (FILE* f = _wfopen(tmp.c_str(), L"wb")) {
+            ok = fwrite(out.data(), 1, out.size(), f) == out.size();
+            ok = (fclose(f) == 0) && ok;
+        }
+        if (!ok || !MoveFileExW(tmp.c_str(), path, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
+            DeleteFileW(tmp.c_str());
+            Log("cfg: writing Environment.cfg failed - %s not set", key);
+            return;
+        }
+    }
     Log("cfg: %s", line);
 }
 

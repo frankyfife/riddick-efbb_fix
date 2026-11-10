@@ -93,6 +93,15 @@ Aufbau:
 - `art/`: eigene Knopfgrafiken (LB/RB/LT/RT usw.). A/B/X/Y werden zur Laufzeit aus der `GUI.xtc` des Spiels
   übernommen; das Repo enthält keine Spieldaten.
 
+## Lizenz
+
+GNU General Public License v3.0, siehe [LICENSE](LICENSE). Das gilt für den Quelltext in diesem Projekt;
+das Repo enthält keine Spieldaten. Die Drittkomponenten unten behalten ihre eigenen Lizenzen.
+
+Dies ist ein inoffizieller Fix aus der Fangemeinde. Er steht in keiner Verbindung zu Starbreeze Studios,
+Vivendi Universal oder heutigen Rechteinhabern und ist von ihnen weder unterstützt noch gebilligt.
+*The Chronicles of Riddick* und alle zugehörigen Namen gehören ihren jeweiligen Eigentümern.
+
 ## Drittkomponenten
 
 `dsound.dll` (DSOAL) und `dsoal-aldrv.dll` (OpenAL Soft) stammen unverändert aus den Quellen von

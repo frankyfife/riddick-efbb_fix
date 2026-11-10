@@ -90,6 +90,15 @@ Layout:
 - `art/`: own button artwork (LB/RB/LT/RT etc.). A/B/X/Y are taken from the game's `GUI.xtc` at run time;
   the repository contains no game data.
 
+## Licence
+
+GNU General Public License v3.0, see [LICENSE](LICENSE). This covers the code in this repository; the
+repository contains no game data. The third-party components below keep their own licences.
+
+This is an unofficial, fan-made fix. It is not affiliated with, endorsed by or connected to Starbreeze Studios,
+Vivendi Universal or any present rights holder. *The Chronicles of Riddick* and all related names belong to their
+respective owners.
+
 ## Third-party components
 
 `dsound.dll` (DSOAL) and `dsoal-aldrv.dll` (OpenAL Soft) are built unmodified from the sources of

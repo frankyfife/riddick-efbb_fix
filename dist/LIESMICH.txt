@@ -46,3 +46,7 @@ Was behoben / ergaenzt ist
   (auch Alt+F4) zurueckgesetzt - der Desktop bleibt danach korrekt.
 
 Einstellungen: siehe RiddickFix.ini (kommentiert).
+
+Lizenz / licence: GNU GPL v3.0 (LICENSE). Inoffizieller Fan-Fix, keine Verbindung
+zu Starbreeze Studios, Vivendi Universal oder Rechteinhabern. / Unofficial fan-made
+fix, not affiliated with Starbreeze Studios, Vivendi Universal or any rights holder.

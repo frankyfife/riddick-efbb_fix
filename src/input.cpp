@@ -66,53 +66,7 @@ typedef bool(__fastcall* PFN_GetShowCursor)(void* ctx);
 static PFN_GetShowCursor pGetShowCursor;   // menus show the mouse cursor
 static DWORD g_lastPoll;
 
-// test mode: scripted virtual pad (RIDDICKFIX_PADSCRIPT=<file>)
-struct ScriptStep { DWORD t; WORD buttons; float lx, ly, rx, ry, lt, rt; };
-static std::vector<ScriptStep> g_script;
-static DWORD g_scriptStart;
-
-static void LoadScript()
-{
-    char path[MAX_PATH];
-    if (!GetEnvironmentVariableA("RIDDICKFIX_PADSCRIPT", path, MAX_PATH)) return;
-    FILE* f = fopen(path, "r");
-    if (!f) return;
-    char line[256];
-    while (fgets(line, sizeof(line), f)) {
-        ScriptStep s = {};
-        unsigned b = 0;
-        if (line[0] == '#') continue;
-        if (sscanf(line, "%lu %x %f %f %f %f %f %f", &s.t, &b, &s.lx, &s.ly, &s.rx, &s.ry, &s.lt, &s.rt) >= 2) {
-            s.buttons = (WORD)b; g_script.push_back(s);
-        }
-    }
-    fclose(f);
-    Log("input: test pad script with %zu steps", g_script.size());
-}
-
-// live test channel: RIDDICKFIX_PADLIVE=<file>; file content "<seq> <button-mask hex> <ms> [lx ly rx ry lt rt]"
-static char g_livePath[MAX_PATH];
-static unsigned g_liveSeq;
-static DWORD g_liveUntil, g_liveCheck;
-static ScriptStep g_live;
-static void PollLive()
-{
-    if (!g_livePath[0]) return;
-    DWORD now = GetTickCount();
-    if (now - g_liveCheck < 50) return;
-    g_liveCheck = now;
-    FILE* f = fopen(g_livePath, "r");
-    if (!f) return;
-    unsigned seq = 0, b = 0, ms = 0; ScriptStep s = {};
-    int n = fscanf(f, "%u %x %u %f %f %f %f %f %f", &seq, &b, &ms, &s.lx, &s.ly, &s.rx, &s.ry, &s.lt, &s.rt);
-    fclose(f);
-    if (n >= 3 && seq != g_liveSeq) {
-        g_liveSeq = seq; s.buttons = (WORD)b; g_live = s; g_liveUntil = now + ms;
-        Log("input: live step %u buttons %x for %u ms", seq, b, ms);
-    }
-}
-
-static bool ReadRealPad(PadState& p)
+static bool ReadPad(PadState& p)
 {
     p = {};
     if (!pXInputGetState) return false;
@@ -140,32 +94,6 @@ static bool ReadRealPad(PadState& p)
     p.rx = gp.sThumbRX / 32767.0f; p.ry = gp.sThumbRY / 32767.0f;
     p.lt = gp.bLeftTrigger / 255.0f; p.rt = gp.bRightTrigger / 255.0f;
     return true;
-}
-
-// The real controller is always read; test input (live file / script) is only
-// added on top while a test step is active.
-static bool ReadPad(PadState& p)
-{
-    bool real = ReadRealPad(p);
-    const ScriptStep* t = nullptr;
-    if (g_livePath[0]) {
-        PollLive();
-        if (GetTickCount() < g_liveUntil) t = &g_live;
-    } else if (!g_script.empty()) {
-        if (!g_scriptStart) g_scriptStart = GetTickCount();
-        DWORD now = GetTickCount() - g_scriptStart;
-        for (auto& s : g_script) if (s.t <= now) t = &s;
-    }
-    if (t) {
-        p.connected = true;
-        p.buttons |= t->buttons;
-        if (t->lx || t->ly) { p.lx = t->lx; p.ly = t->ly; }
-        if (t->rx || t->ry) { p.rx = t->rx; p.ry = t->ry; }
-        if (t->lt) p.lt = t->lt;
-        if (t->rt) p.rt = t->rt;
-        return true;
-    }
-    return real;
 }
 
 // Radial dead zone + response curve, returns components scaled to 0..255 like the
@@ -417,7 +345,7 @@ static int __fastcall Hook_GuiTranslate(uint8_t* in, uint8_t* out, intptr_t cap,
     return n + 1;
 }
 
-bool Input_PadActive() { return g_activePad >= 0 || !g_script.empty(); }
+bool Input_PadActive() { return g_activePad >= 0; }
 
 void Input_Init()
 {
@@ -428,8 +356,6 @@ void Input_Init()
         pXInputGetState = (PFN_XInputGetState)GetProcAddress(x, "XInputGetState");
         pXInputSetState = (PFN_XInputSetState)GetProcAddress(x, "XInputSetState");
     }
-    LoadScript();
-    GetEnvironmentVariableA("RIDDICKFIX_PADLIVE", g_livePath, MAX_PATH);
     Log("input: XInput %s", pXInputGetState ? "ready" : "NOT available");
 }
 

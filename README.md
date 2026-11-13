@@ -85,8 +85,7 @@ Output: `build\winmm.dll`.
 Layout:
 
 - `src/`: proxy and hooks.
-- `tools/`: generators and test helpers. The test helpers write to `%RIDDICKFIX_TESTDIR%` or
-  `%TEMP%\RiddickFixTest`.
+- `tools/`: build helpers and generators (proxy stubs, glyph artwork, DSOAL/OpenAL Soft build).
 - `art/`: own button artwork (LB/RB/LT/RT etc.). A/B/X/Y are taken from the game's `GUI.xtc` at run time;
   the repository contains no game data.
 

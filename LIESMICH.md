@@ -88,8 +88,7 @@ Ergebnis: `build\winmm.dll`.
 Aufbau:
 
 - `src/`: Proxy und Hooks.
-- `tools/`: Generatoren und Testhelfer. Die Testhelfer schreiben nach `%RIDDICKFIX_TESTDIR%` bzw.
-  `%TEMP%\RiddickFixTest`.
+- `tools/`: Build-Helfer und Generatoren (Proxy-Stubs, Knopfgrafiken, DSOAL/OpenAL-Soft-Build).
 - `art/`: eigene Knopfgrafiken (LB/RB/LT/RT usw.). A/B/X/Y werden zur Laufzeit aus der `GUI.xtc` des Spiels
   übernommen; das Repo enthält keine Spieldaten.
 
